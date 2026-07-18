@@ -2054,6 +2054,7 @@ end
                 Popup.BackgroundColor3 = Color3.fromRGB(30, 37, 49)
                 Popup.BorderSizePixel = 0
                 Popup.Visible = false
+                Popup.ZIndex = 100
                 Popup.Parent = Row
 
                 local PopupCorner = Instance.new("UICorner")
@@ -2161,6 +2162,14 @@ end
                 HueCursorCorner.CornerRadius = UDim.new(1, 0)
                 HueCursorCorner.Parent = HueCursor
 
+                -- Keep popup outside module layout so opening it never moves rows.
+                Popup.Parent = Library._ui
+                for _, descendant in ipairs(Popup:GetDescendants()) do
+                    if descendant:IsA("GuiObject") then
+                        descendant.ZIndex = 101
+                    end
+                end
+
                 local connectionPrefix = "colorpicker_" .. tostring(settings.flag)
 
                 local function decodeColor(value)
@@ -2242,13 +2251,30 @@ end
 
                     self._open = state
                     Popup.Visible = state
-                    Row.Size = UDim2.new(0, 207, 0, state and 138 or 20)
-                    ModuleManager._multiplier += state and 118 or -118
 
-                    if ModuleManager._state then
-                        Module.Size = UDim2.fromOffset(241, 93 + ModuleManager._size + ModuleManager._multiplier)
+                    Connections:disconnect(connectionPrefix .. "_position")
+                    if state then
+                        local function updatePopupPosition()
+                            if not Preview.Parent or not Popup.Parent then
+                                return
+                            end
+
+                            local viewport = workspace.CurrentCamera.ViewportSize
+                            local x = Preview.AbsolutePosition.X + Preview.AbsoluteSize.X + 6
+                            local y = Preview.AbsolutePosition.Y
+
+                            if x + Popup.AbsoluteSize.X > viewport.X - 6 then
+                                x = Preview.AbsolutePosition.X - Popup.AbsoluteSize.X - 6
+                            end
+
+                            x = math.clamp(x, 6, math.max(6, viewport.X - Popup.AbsoluteSize.X - 6))
+                            y = math.clamp(y, 6, math.max(6, viewport.Y - Popup.AbsoluteSize.Y - 6))
+                            Popup.Position = UDim2.fromOffset(x, y)
+                        end
+
+                        updatePopupPosition()
+                        Connections[connectionPrefix .. "_position"] = RunService.RenderStepped:Connect(updatePopupPosition)
                     end
-                    Options.Size = UDim2.fromOffset(241, ModuleManager._size + ModuleManager._multiplier)
                 end
 
                 local function commitHSV()
