@@ -2069,33 +2069,46 @@ end
                 local Popup = Instance.new("Frame")
                 Popup.Name = "Popup"
                 Popup.Position = UDim2.fromOffset(0, 26)
-                Popup.Size = UDim2.fromOffset(207, 106)
-                Popup.BackgroundColor3 = Color3.fromRGB(30, 37, 49)
+                Popup.Size = UDim2.fromOffset(238, 200)
+                Popup.BackgroundColor3 = Color3.fromRGB(25, 31, 42)
                 Popup.BorderSizePixel = 0
                 Popup.Visible = false
                 Popup.ZIndex = 100
                 Popup.Parent = Row
 
                 local PopupCorner = Instance.new("UICorner")
-                PopupCorner.CornerRadius = UDim.new(0, 5)
+                PopupCorner.CornerRadius = UDim.new(0, 8)
                 PopupCorner.Parent = Popup
 
                 local PopupStroke = Instance.new("UIStroke")
-                PopupStroke.Color = Color3.fromRGB(52, 66, 89)
-                PopupStroke.Transparency = 0.25
+                PopupStroke.Color = Color3.fromRGB(76, 91, 122)
+                PopupStroke.Transparency = 0.15
+                PopupStroke.Thickness = 1.2
                 PopupStroke.Parent = Popup
+
+                local PopupTitle = Instance.new("TextLabel")
+                PopupTitle.Name = "Title"
+                PopupTitle.Position = UDim2.fromOffset(10, 7)
+                PopupTitle.Size = UDim2.new(1, -20, 0, 18)
+                PopupTitle.BackgroundTransparency = 1
+                PopupTitle.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+                PopupTitle.Text = settings.title or "Choose Color"
+                PopupTitle.TextColor3 = Color3.fromRGB(225, 232, 248)
+                PopupTitle.TextSize = 12
+                PopupTitle.TextXAlignment = Enum.TextXAlignment.Left
+                PopupTitle.Parent = Popup
 
                 local SaturationValue = Instance.new("Frame")
                 SaturationValue.Name = "SaturationValue"
-                SaturationValue.Position = UDim2.fromOffset(7, 7)
-                SaturationValue.Size = UDim2.fromOffset(174, 92)
+                SaturationValue.Position = UDim2.fromOffset(10, 31)
+                SaturationValue.Size = UDim2.fromOffset(218, 112)
                 SaturationValue.BorderSizePixel = 0
                 SaturationValue.Active = true
                 SaturationValue.ClipsDescendants = true
                 SaturationValue.Parent = Popup
 
                 local SVCorner = Instance.new("UICorner")
-                SVCorner.CornerRadius = UDim.new(0, 4)
+                SVCorner.CornerRadius = UDim.new(0, 6)
                 SVCorner.Parent = SaturationValue
 
                 local WhiteOverlay = Instance.new("Frame")
@@ -2128,7 +2141,7 @@ end
 
                 local SVCursor = Instance.new("Frame")
                 SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
-                SVCursor.Size = UDim2.fromOffset(7, 7)
+                SVCursor.Size = UDim2.fromOffset(10, 10)
                 SVCursor.BackgroundTransparency = 1
                 SVCursor.BorderSizePixel = 0
                 SVCursor.ZIndex = 5
@@ -2140,23 +2153,23 @@ end
 
                 local SVCursorStroke = Instance.new("UIStroke")
                 SVCursorStroke.Color = Color3.new(1, 1, 1)
-                SVCursorStroke.Thickness = 1.5
+                SVCursorStroke.Thickness = 2
                 SVCursorStroke.Parent = SVCursor
 
                 local Hue = Instance.new("Frame")
                 Hue.Name = "Hue"
-                Hue.Position = UDim2.fromOffset(187, 7)
-                Hue.Size = UDim2.fromOffset(13, 92)
+                Hue.Position = UDim2.fromOffset(10, 153)
+                Hue.Size = UDim2.fromOffset(218, 14)
                 Hue.BorderSizePixel = 0
                 Hue.Active = true
                 Hue.Parent = Popup
 
                 local HueCorner = Instance.new("UICorner")
-                HueCorner.CornerRadius = UDim.new(0, 4)
+                HueCorner.CornerRadius = UDim.new(1, 0)
                 HueCorner.Parent = Hue
 
                 local HueGradient = Instance.new("UIGradient")
-                HueGradient.Rotation = 90
+                HueGradient.Rotation = 0
                 HueGradient.Color = ColorSequence.new({
                     ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 1, 1)),
                     ColorSequenceKeypoint.new(1 / 6, Color3.fromHSV(1 / 6, 1, 1)),
@@ -2170,8 +2183,8 @@ end
 
                 local HueCursor = Instance.new("Frame")
                 HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
-                HueCursor.Position = UDim2.fromScale(0.5, 0)
-                HueCursor.Size = UDim2.new(1, 4, 0, 3)
+                HueCursor.Position = UDim2.fromScale(0, 0.5)
+                HueCursor.Size = UDim2.new(0, 3, 1, 4)
                 HueCursor.BackgroundColor3 = Color3.new(1, 1, 1)
                 HueCursor.BorderSizePixel = 0
                 HueCursor.ZIndex = 5
@@ -2180,6 +2193,18 @@ end
                 local HueCursorCorner = Instance.new("UICorner")
                 HueCursorCorner.CornerRadius = UDim.new(1, 0)
                 HueCursorCorner.Parent = HueCursor
+
+                local PopupHint = Instance.new("TextLabel")
+                PopupHint.Name = "Hint"
+                PopupHint.Position = UDim2.fromOffset(10, 176)
+                PopupHint.Size = UDim2.new(1, -20, 0, 14)
+                PopupHint.BackgroundTransparency = 1
+                PopupHint.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+                PopupHint.Text = "Drag to choose color"
+                PopupHint.TextColor3 = Color3.fromRGB(145, 158, 184)
+                PopupHint.TextSize = 10
+                PopupHint.TextXAlignment = Enum.TextXAlignment.Left
+                PopupHint.Parent = Popup
 
                 -- Keep popup outside module layout so opening it never moves rows.
                 Popup.Parent = Library._colorpicker_overlay or Library._ui
@@ -2230,9 +2255,10 @@ end
                     ColorpickerManager._value = color
                     SaturationValue.BackgroundColor3 = Color3.fromHSV(ColorpickerManager._hue, 1, 1)
                     SVCursor.Position = UDim2.fromScale(ColorpickerManager._saturation, 1 - ColorpickerManager._brightness)
-                    HueCursor.Position = UDim2.fromScale(0.5, ColorpickerManager._hue)
+                    HueCursor.Position = UDim2.fromScale(ColorpickerManager._hue, 0.5)
                     Preview.BackgroundColor3 = color
                     Preview.Text = colorHex(color)
+                    PopupTitle.Text = (settings.title or "Choose Color") .. "  " .. colorHex(color)
                 end
 
                 function ColorpickerManager:set_value(value, silent)
@@ -2307,7 +2333,7 @@ end
                 end
 
                 local function updateHue(position)
-                    ColorpickerManager._hue = math.clamp((position.Y - Hue.AbsolutePosition.Y) / Hue.AbsoluteSize.Y, 0, 1)
+                    ColorpickerManager._hue = math.clamp((position.X - Hue.AbsolutePosition.X) / Hue.AbsoluteSize.X, 0, 1)
                     commitHSV()
                 end
 
