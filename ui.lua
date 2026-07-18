@@ -319,14 +319,12 @@ local Library = {
     _config = Config:load(game.GameId),
 
     _choosing_keybind = false,
-    _active_keypicker = nil,
     _device = nil,
 
     _ui_open = true,
     _ui_scale = 1,
     _ui_loaded = false,
     _ui = nil,
-    _colorpicker_overlay = nil,
 
     _dragging = false,
     _drag_start = nil,
@@ -511,23 +509,11 @@ function Library:create_ui()
         Debris:AddItem(old_Xinve, 0)
     end
 
-    if CoreGui:FindFirstChild('XinveColorPickerOverlay') then
-        Debris:AddItem(CoreGui:FindFirstChild('XinveColorPickerOverlay'), 0)
-    end
-
     local Xinve = Instance.new('ScreenGui')
     Xinve.ResetOnSpawn = false
     Xinve.Name = 'Xinve'
     Xinve.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     Xinve.Parent = CoreGui
-
-    self._colorpicker_overlay = Instance.new('ScreenGui')
-    self._colorpicker_overlay.Name = 'XinveColorPickerOverlay'
-    self._colorpicker_overlay.ResetOnSpawn = false
-    self._colorpicker_overlay.IgnoreGuiInset = Xinve.IgnoreGuiInset
-    self._colorpicker_overlay.DisplayOrder = 1000
-    self._colorpicker_overlay.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    self._colorpicker_overlay.Parent = CoreGui
     
     local Container = Instance.new('Frame')
     Container.ClipsDescendants = true
@@ -810,11 +796,9 @@ AnimateGif(Icon, 60, 40, 2, 3, 5, "rbxassetid://74080484918102", 10)
 
     function self:UIVisiblity()
         Xinve.Enabled = not Xinve.Enabled;
-        self._colorpicker_overlay.Enabled = Xinve.Enabled
     end;
 
     function self:change_visiblity(state: boolean)
-        self._colorpicker_overlay.Enabled = state
         if state then
             TweenService:Create(Container, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                 Size = UDim2.fromOffset(698, 479)
@@ -2179,7 +2163,7 @@ end
                 HueCursorCorner.Parent = HueCursor
 
                 -- Keep popup outside module layout so opening it never moves rows.
-                Popup.Parent = Library._colorpicker_overlay or Library._ui
+                Popup.Parent = Library._ui
                 for _, descendant in ipairs(Popup:GetDescendants()) do
                     if descendant:IsA("GuiObject") then
                         descendant.ZIndex = 101
@@ -2421,48 +2405,6 @@ end
                 PickerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 PickerStroke.Parent = Picker
 
-                local CapturePopup = Instance.new("Frame")
-                CapturePopup.Name = "KeypickerCapture"
-                CapturePopup.AnchorPoint = Vector2.new(0.5, 0.5)
-                CapturePopup.Position = UDim2.fromScale(0.5, 0.5)
-                CapturePopup.Size = UDim2.fromOffset(270, 96)
-                CapturePopup.BackgroundColor3 = Color3.fromRGB(25, 31, 42)
-                CapturePopup.BorderSizePixel = 0
-                CapturePopup.Visible = false
-                CapturePopup.ZIndex = 300
-                CapturePopup.Parent = Library._colorpicker_overlay or Library._ui
-
-                local CaptureCorner = Instance.new("UICorner")
-                CaptureCorner.CornerRadius = UDim.new(0, 7)
-                CaptureCorner.Parent = CapturePopup
-
-                local CaptureStroke = Instance.new("UIStroke")
-                CaptureStroke.Color = Color3.fromRGB(110, 140, 205)
-                CaptureStroke.Thickness = 1.5
-                CaptureStroke.Parent = CapturePopup
-
-                local CaptureTitle = Instance.new("TextLabel")
-                CaptureTitle.Position = UDim2.fromOffset(10, 12)
-                CaptureTitle.Size = UDim2.new(1, -20, 0, 24)
-                CaptureTitle.BackgroundTransparency = 1
-                CaptureTitle.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-                CaptureTitle.Text = "Press a key for " .. (settings.title or "Keybind")
-                CaptureTitle.TextColor3 = Color3.fromRGB(225, 233, 255)
-                CaptureTitle.TextSize = 13
-                CaptureTitle.ZIndex = 301
-                CaptureTitle.Parent = CapturePopup
-
-                local CaptureHint = Instance.new("TextLabel")
-                CaptureHint.Position = UDim2.fromOffset(10, 42)
-                CaptureHint.Size = UDim2.new(1, -20, 0, 38)
-                CaptureHint.BackgroundTransparency = 1
-                CaptureHint.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-                CaptureHint.Text = "Esc: cancel    Backspace/Delete: clear"
-                CaptureHint.TextColor3 = Color3.fromRGB(165, 178, 205)
-                CaptureHint.TextSize = 11
-                CaptureHint.ZIndex = 301
-                CaptureHint.Parent = CapturePopup
-
                 local connectionPrefix = "keypicker_" .. tostring(settings.flag)
 
                 local function resolveValue(value)
@@ -2523,11 +2465,7 @@ end
 
                 local function finishChoosing()
                     KeypickerManager._choosing = false
-                    CapturePopup.Visible = false
-                    if Library._active_keypicker == KeypickerManager then
-                        Library._active_keypicker = nil
-                        Library._choosing_keybind = false
-                    end
+                    Library._choosing_keybind = false
                     Connections:disconnect(connectionPrefix .. "_capture")
                 end
 
@@ -2554,31 +2492,22 @@ end
                     return self:set_value(nil, silent)
                 end
 
-                function KeypickerManager:cancel_choose()
-                    Picker.Text = displayName(self._value)
-                    PickerStroke.Color = Color3.fromRGB(52, 66, 89)
-                    finishChoosing()
-                end
-
                 function KeypickerManager:begin_choose()
-                    if Library._active_keypicker and Library._active_keypicker ~= self then
-                        Library._active_keypicker:cancel_choose()
-                    elseif Library._choosing_keybind and not Library._active_keypicker then
-                        -- Recover stale capture state left by older controls.
-                        Library._choosing_keybind = false
+                    if Library._choosing_keybind then
+                        return
                     end
 
                     Library._choosing_keybind = true
-                    Library._active_keypicker = self
                     self._choosing = true
                     Picker.Text = "..."
                     PickerStroke.Color = Color3.fromRGB(209, 222, 255)
-                    CapturePopup.Visible = true
 
                     Connections[connectionPrefix .. "_capture"] = UserInputService.InputBegan:Connect(function(input)
                         if input.UserInputType == Enum.UserInputType.Keyboard then
                             if input.KeyCode == Enum.KeyCode.Escape then
-                                self:cancel_choose()
+                                Picker.Text = displayName(self._value)
+                                PickerStroke.Color = Color3.fromRGB(52, 66, 89)
+                                finishChoosing()
                                 return
                             elseif input.KeyCode == Enum.KeyCode.Backspace or input.KeyCode == Enum.KeyCode.Delete then
                                 self:clear()
@@ -2602,7 +2531,6 @@ end
                 function KeypickerManager:destroy()
                     finishChoosing()
                     Connections:disconnect(connectionPrefix .. "_press")
-                    CapturePopup:Destroy()
                     Row:Destroy()
                 end
 
@@ -2610,7 +2538,6 @@ end
                 KeypickerManager.SetValue = KeypickerManager.set_value
                 KeypickerManager.GetValue = KeypickerManager.get_value
                 KeypickerManager.Clear = KeypickerManager.clear
-                KeypickerManager.CancelChoose = KeypickerManager.cancel_choose
                 KeypickerManager.BeginChoose = KeypickerManager.begin_choose
                 KeypickerManager.Destroy = KeypickerManager.destroy
 
