@@ -325,6 +325,7 @@ local Library = {
     _ui_scale = 1,
     _ui_loaded = false,
     _ui = nil,
+    _colorpicker_overlay = nil,
 
     _dragging = false,
     _drag_start = nil,
@@ -509,11 +510,23 @@ function Library:create_ui()
         Debris:AddItem(old_Xinve, 0)
     end
 
+    if CoreGui:FindFirstChild('XinveColorPickerOverlay') then
+        Debris:AddItem(CoreGui:FindFirstChild('XinveColorPickerOverlay'), 0)
+    end
+
     local Xinve = Instance.new('ScreenGui')
     Xinve.ResetOnSpawn = false
     Xinve.Name = 'Xinve'
     Xinve.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     Xinve.Parent = CoreGui
+
+    self._colorpicker_overlay = Instance.new('ScreenGui')
+    self._colorpicker_overlay.Name = 'XinveColorPickerOverlay'
+    self._colorpicker_overlay.ResetOnSpawn = false
+    self._colorpicker_overlay.IgnoreGuiInset = Xinve.IgnoreGuiInset
+    self._colorpicker_overlay.DisplayOrder = 1000
+    self._colorpicker_overlay.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    self._colorpicker_overlay.Parent = CoreGui
     
     local Container = Instance.new('Frame')
     Container.ClipsDescendants = true
@@ -796,9 +809,11 @@ AnimateGif(Icon, 60, 40, 2, 3, 5, "rbxassetid://74080484918102", 10)
 
     function self:UIVisiblity()
         Xinve.Enabled = not Xinve.Enabled;
+        self._colorpicker_overlay.Enabled = Xinve.Enabled
     end;
 
     function self:change_visiblity(state: boolean)
+        self._colorpicker_overlay.Enabled = state
         if state then
             TweenService:Create(Container, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                 Size = UDim2.fromOffset(698, 479)
@@ -2163,7 +2178,7 @@ end
                 HueCursorCorner.Parent = HueCursor
 
                 -- Keep popup outside module layout so opening it never moves rows.
-                Popup.Parent = Library._ui
+                Popup.Parent = Library._colorpicker_overlay or Library._ui
                 for _, descendant in ipairs(Popup:GetDescendants()) do
                     if descendant:IsA("GuiObject") then
                         descendant.ZIndex = 101
