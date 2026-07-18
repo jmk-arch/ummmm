@@ -2022,7 +2022,8 @@ end
                     _hue = 0,
                     _saturation = 0,
                     _brightness = 1,
-                    _open = false
+                    _open = false,
+                    _rainbow = false
                 }
 
                 local Row = Instance.new("Frame")
@@ -2069,8 +2070,8 @@ end
                 local Popup = Instance.new("Frame")
                 Popup.Name = "Popup"
                 Popup.Position = UDim2.fromOffset(0, 26)
-                Popup.Size = UDim2.fromOffset(238, 200)
-                Popup.BackgroundColor3 = Color3.fromRGB(25, 31, 42)
+                Popup.Size = UDim2.fromOffset(240, 338)
+                Popup.BackgroundColor3 = Color3.fromRGB(16, 17, 20)
                 Popup.BorderSizePixel = 0
                 Popup.Visible = false
                 Popup.ZIndex = 100
@@ -2089,7 +2090,7 @@ end
                 local PopupTitle = Instance.new("TextLabel")
                 PopupTitle.Name = "Title"
                 PopupTitle.Position = UDim2.fromOffset(10, 7)
-                PopupTitle.Size = UDim2.new(1, -20, 0, 18)
+                PopupTitle.Size = UDim2.new(1, -45, 0, 18)
                 PopupTitle.BackgroundTransparency = 1
                 PopupTitle.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
                 PopupTitle.Text = settings.title or "Choose Color"
@@ -2098,10 +2099,25 @@ end
                 PopupTitle.TextXAlignment = Enum.TextXAlignment.Left
                 PopupTitle.Parent = Popup
 
+                local CloseButton = Instance.new("TextButton")
+                CloseButton.AnchorPoint = Vector2.new(1, 0)
+                CloseButton.Position = UDim2.new(1, -8, 0, 6)
+                CloseButton.Size = UDim2.fromOffset(20, 20)
+                CloseButton.BackgroundColor3 = Color3.fromRGB(27, 29, 34)
+                CloseButton.BorderSizePixel = 0
+                CloseButton.Text = "×"
+                CloseButton.TextColor3 = Color3.fromRGB(170, 175, 188)
+                CloseButton.TextSize = 15
+                CloseButton.Parent = Popup
+
+                local CloseCorner = Instance.new("UICorner")
+                CloseCorner.CornerRadius = UDim.new(0, 4)
+                CloseCorner.Parent = CloseButton
+
                 local SaturationValue = Instance.new("Frame")
                 SaturationValue.Name = "SaturationValue"
-                SaturationValue.Position = UDim2.fromOffset(10, 31)
-                SaturationValue.Size = UDim2.fromOffset(218, 112)
+                SaturationValue.Position = UDim2.fromOffset(10, 38)
+                SaturationValue.Size = UDim2.fromOffset(180, 180)
                 SaturationValue.BorderSizePixel = 0
                 SaturationValue.Active = true
                 SaturationValue.ClipsDescendants = true
@@ -2158,18 +2174,18 @@ end
 
                 local Hue = Instance.new("Frame")
                 Hue.Name = "Hue"
-                Hue.Position = UDim2.fromOffset(10, 153)
-                Hue.Size = UDim2.fromOffset(218, 14)
+                Hue.Position = UDim2.fromOffset(200, 38)
+                Hue.Size = UDim2.fromOffset(20, 180)
                 Hue.BorderSizePixel = 0
                 Hue.Active = true
                 Hue.Parent = Popup
 
                 local HueCorner = Instance.new("UICorner")
-                HueCorner.CornerRadius = UDim.new(1, 0)
+                HueCorner.CornerRadius = UDim.new(0, 4)
                 HueCorner.Parent = Hue
 
                 local HueGradient = Instance.new("UIGradient")
-                HueGradient.Rotation = 0
+                HueGradient.Rotation = 90
                 HueGradient.Color = ColorSequence.new({
                     ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 1, 1)),
                     ColorSequenceKeypoint.new(1 / 6, Color3.fromHSV(1 / 6, 1, 1)),
@@ -2183,8 +2199,8 @@ end
 
                 local HueCursor = Instance.new("Frame")
                 HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
-                HueCursor.Position = UDim2.fromScale(0, 0.5)
-                HueCursor.Size = UDim2.new(0, 3, 1, 4)
+                HueCursor.Position = UDim2.fromScale(0.5, 0)
+                HueCursor.Size = UDim2.new(1, 4, 0, 3)
                 HueCursor.BackgroundColor3 = Color3.new(1, 1, 1)
                 HueCursor.BorderSizePixel = 0
                 HueCursor.ZIndex = 5
@@ -2194,17 +2210,99 @@ end
                 HueCursorCorner.CornerRadius = UDim.new(1, 0)
                 HueCursorCorner.Parent = HueCursor
 
-                local PopupHint = Instance.new("TextLabel")
-                PopupHint.Name = "Hint"
-                PopupHint.Position = UDim2.fromOffset(10, 176)
-                PopupHint.Size = UDim2.new(1, -20, 0, 14)
-                PopupHint.BackgroundTransparency = 1
-                PopupHint.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-                PopupHint.Text = "Drag to choose color"
-                PopupHint.TextColor3 = Color3.fromRGB(145, 158, 184)
-                PopupHint.TextSize = 10
-                PopupHint.TextXAlignment = Enum.TextXAlignment.Left
-                PopupHint.Parent = Popup
+                local CurrentSwatch = Instance.new("Frame")
+                CurrentSwatch.Name = "CurrentColor"
+                CurrentSwatch.Position = UDim2.fromOffset(10, 232)
+                CurrentSwatch.Size = UDim2.fromOffset(32, 22)
+                CurrentSwatch.BorderSizePixel = 0
+                CurrentSwatch.Parent = Popup
+
+                local SwatchCorner = Instance.new("UICorner")
+                SwatchCorner.CornerRadius = UDim.new(0, 4)
+                SwatchCorner.Parent = CurrentSwatch
+
+                local function createColorInput(name, x, width, placeholder)
+                    local input = Instance.new("TextBox")
+                    input.Name = name
+                    input.Position = UDim2.fromOffset(x, 232)
+                    input.Size = UDim2.fromOffset(width, 22)
+                    input.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
+                    input.BorderSizePixel = 0
+                    input.ClearTextOnFocus = false
+                    input.PlaceholderText = placeholder
+                    input.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+                    input.TextColor3 = Color3.fromRGB(218, 221, 230)
+                    input.PlaceholderColor3 = Color3.fromRGB(105, 110, 123)
+                    input.TextSize = 9
+                    input.Parent = Popup
+
+                    local corner = Instance.new("UICorner")
+                    corner.CornerRadius = UDim.new(0, 4)
+                    corner.Parent = input
+                    return input
+                end
+
+                local HexInput = createColorInput("Hex", 52, 76, "#FFFFFF")
+                local RedInput = createColorInput("Red", 138, 26, "255")
+                local GreenInput = createColorInput("Green", 168, 26, "255")
+                local BlueInput = createColorInput("Blue", 198, 26, "255")
+
+                local function createInputLabel(text, x, width)
+                    local label = Instance.new("TextLabel")
+                    label.Position = UDim2.fromOffset(x, 258)
+                    label.Size = UDim2.fromOffset(width, 14)
+                    label.BackgroundTransparency = 1
+                    label.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+                    label.Text = text
+                    label.TextColor3 = Color3.fromRGB(130, 135, 148)
+                    label.TextSize = 9
+                    label.Parent = Popup
+                end
+
+                createInputLabel("HEX", 52, 76)
+                createInputLabel("R", 138, 26)
+                createInputLabel("G", 168, 26)
+                createInputLabel("B", 198, 26)
+
+                local RainbowButton = Instance.new("TextButton")
+                RainbowButton.Name = "Rainbow"
+                RainbowButton.Position = UDim2.fromOffset(10, 292)
+                RainbowButton.Size = UDim2.fromOffset(17, 17)
+                RainbowButton.BackgroundColor3 = Color3.fromRGB(21, 23, 27)
+                RainbowButton.BorderSizePixel = 0
+                RainbowButton.Text = ""
+                RainbowButton.Parent = Popup
+
+                local RainbowCorner = Instance.new("UICorner")
+                RainbowCorner.CornerRadius = UDim.new(0, 4)
+                RainbowCorner.Parent = RainbowButton
+
+                local RainbowStroke = Instance.new("UIStroke")
+                RainbowStroke.Color = Color3.fromRGB(85, 90, 102)
+                RainbowStroke.Parent = RainbowButton
+
+                local RainbowFill = Instance.new("Frame")
+                RainbowFill.AnchorPoint = Vector2.new(0.5, 0.5)
+                RainbowFill.Position = UDim2.fromScale(0.5, 0.5)
+                RainbowFill.Size = UDim2.fromOffset(0, 0)
+                RainbowFill.BackgroundColor3 = Color3.fromRGB(225, 230, 242)
+                RainbowFill.BorderSizePixel = 0
+                RainbowFill.Parent = RainbowButton
+
+                local RainbowFillCorner = Instance.new("UICorner")
+                RainbowFillCorner.CornerRadius = UDim.new(0, 3)
+                RainbowFillCorner.Parent = RainbowFill
+
+                local RainbowLabel = Instance.new("TextLabel")
+                RainbowLabel.Position = UDim2.fromOffset(34, 289)
+                RainbowLabel.Size = UDim2.fromOffset(100, 22)
+                RainbowLabel.BackgroundTransparency = 1
+                RainbowLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+                RainbowLabel.Text = "Rainbow"
+                RainbowLabel.TextColor3 = Color3.fromRGB(165, 170, 183)
+                RainbowLabel.TextSize = 10
+                RainbowLabel.TextXAlignment = Enum.TextXAlignment.Left
+                RainbowLabel.Parent = Popup
 
                 -- Keep popup outside module layout so opening it never moves rows.
                 Popup.Parent = Library._colorpicker_overlay or Library._ui
@@ -2255,13 +2353,18 @@ end
                     ColorpickerManager._value = color
                     SaturationValue.BackgroundColor3 = Color3.fromHSV(ColorpickerManager._hue, 1, 1)
                     SVCursor.Position = UDim2.fromScale(ColorpickerManager._saturation, 1 - ColorpickerManager._brightness)
-                    HueCursor.Position = UDim2.fromScale(ColorpickerManager._hue, 0.5)
+                    HueCursor.Position = UDim2.fromScale(0.5, ColorpickerManager._hue)
                     Preview.BackgroundColor3 = color
                     Preview.Text = colorHex(color)
-                    PopupTitle.Text = (settings.title or "Choose Color") .. "  " .. colorHex(color)
+                    PopupTitle.Text = settings.title or "Color Picker"
+                    CurrentSwatch.BackgroundColor3 = color
+                    HexInput.Text = colorHex(color)
+                    RedInput.Text = tostring(math.round(color.R * 255))
+                    GreenInput.Text = tostring(math.round(color.G * 255))
+                    BlueInput.Text = tostring(math.round(color.B * 255))
                 end
 
-                function ColorpickerManager:set_value(value, silent)
+                function ColorpickerManager:set_value(value, silent, skipSave)
                     local color = decodeColor(value)
                     if not color then
                         return self._value
@@ -2269,13 +2372,16 @@ end
 
                     self._value = color
                     self._hue, self._saturation, self._brightness = color:ToHSV()
-                    Library._config._flags[settings.flag] = {
-                        r = math.round(color.R * 255),
-                        g = math.round(color.G * 255),
-                        b = math.round(color.B * 255)
-                    }
                     refreshVisuals()
-                    Config:save(game.GameId, Library._config)
+
+                    if not skipSave then
+                        Library._config._flags[settings.flag] = {
+                            r = math.round(color.R * 255),
+                            g = math.round(color.G * 255),
+                            b = math.round(color.B * 255)
+                        }
+                        Config:save(game.GameId, Library._config)
+                    end
 
                     if not silent and settings.callback then
                         settings.callback(color)
@@ -2322,18 +2428,39 @@ end
                     end
                 end
 
+                function ColorpickerManager:set_rainbow(state)
+                    state = state == true
+                    if self._rainbow == state then
+                        return
+                    end
+
+                    self._rainbow = state
+                    RainbowFill.Size = UDim2.fromOffset(state and 11 or 0, state and 11 or 0)
+                    Connections:disconnect(connectionPrefix .. "_rainbow")
+
+                    if state then
+                        Connections[connectionPrefix .. "_rainbow"] = RunService.RenderStepped:Connect(function()
+                            self:set_value(Color3.fromHSV((os.clock() % 5) / 5, 1, 1), false, true)
+                        end)
+                    else
+                        self:set_value(self._value, false, false)
+                    end
+                end
+
                 local function commitHSV()
                     ColorpickerManager:set_value(Color3.fromHSV(ColorpickerManager._hue, ColorpickerManager._saturation, ColorpickerManager._brightness))
                 end
 
                 local function updateSV(position)
+                    ColorpickerManager:set_rainbow(false)
                     ColorpickerManager._saturation = math.clamp((position.X - SaturationValue.AbsolutePosition.X) / SaturationValue.AbsoluteSize.X, 0, 1)
                     ColorpickerManager._brightness = 1 - math.clamp((position.Y - SaturationValue.AbsolutePosition.Y) / SaturationValue.AbsoluteSize.Y, 0, 1)
                     commitHSV()
                 end
 
                 local function updateHue(position)
-                    ColorpickerManager._hue = math.clamp((position.X - Hue.AbsolutePosition.X) / Hue.AbsoluteSize.X, 0, 1)
+                    ColorpickerManager:set_rainbow(false)
+                    ColorpickerManager._hue = math.clamp((position.Y - Hue.AbsolutePosition.Y) / Hue.AbsoluteSize.Y, 0, 1)
                     commitHSV()
                 end
 
@@ -2358,6 +2485,40 @@ end
                     ColorpickerManager:set_open(not ColorpickerManager._open)
                 end)
 
+                CloseButton.MouseButton1Click:Connect(function()
+                    ColorpickerManager:set_open(false)
+                end)
+
+                RainbowButton.MouseButton1Click:Connect(function()
+                    ColorpickerManager:set_rainbow(not ColorpickerManager._rainbow)
+                end)
+
+                HexInput.FocusLost:Connect(function()
+                    local color = decodeColor(HexInput.Text)
+                    if color then
+                        ColorpickerManager:set_rainbow(false)
+                        ColorpickerManager:set_value(color)
+                    else
+                        refreshVisuals()
+                    end
+                end)
+
+                local function applyRGBInputs()
+                    local r = tonumber(RedInput.Text)
+                    local g = tonumber(GreenInput.Text)
+                    local b = tonumber(BlueInput.Text)
+                    if r and g and b then
+                        ColorpickerManager:set_rainbow(false)
+                        ColorpickerManager:set_value(Color3.fromRGB(math.clamp(r, 0, 255), math.clamp(g, 0, 255), math.clamp(b, 0, 255)))
+                    else
+                        refreshVisuals()
+                    end
+                end
+
+                RedInput.FocusLost:Connect(applyRGBInputs)
+                GreenInput.FocusLost:Connect(applyRGBInputs)
+                BlueInput.FocusLost:Connect(applyRGBInputs)
+
                 SaturationValue.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         startDrag(input, updateSV)
@@ -2373,6 +2534,7 @@ end
                 ColorpickerManager.SetValue = ColorpickerManager.set_value
                 ColorpickerManager.GetValue = ColorpickerManager.get_value
                 ColorpickerManager.SetOpen = ColorpickerManager.set_open
+                ColorpickerManager.SetRainbow = ColorpickerManager.set_rainbow
 
                 local savedColor = decodeColor(Library._config._flags[settings.flag])
                 local defaultColor = decodeColor(settings.default) or Color3.new(1, 1, 1)
